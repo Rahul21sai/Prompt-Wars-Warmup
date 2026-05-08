@@ -166,7 +166,7 @@ export async function generateItinerary(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-1.5-flash-latest',
     systemInstruction: 'You are a travel expert. Return only valid JSON. Do not include markdown formatting or code fences.',
   });
 

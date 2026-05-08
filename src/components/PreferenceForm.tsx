@@ -19,7 +19,7 @@ import {
   MIN_BUDGET_USD,
   RATE_LIMIT_COOLDOWN_MS
 } from '../constants';
-import type { TravelPreferences } from '../types';
+import type { TravelPreferences, PartyType, TravelStyle, DietaryOption, MobilityOption, Interest } from '../types';
 
 interface PreferenceFormProps {
   onSubmit: (preferences: TravelPreferences) => void;
@@ -58,7 +58,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
   }, []);
 
   /** Toggles an interest chip */
-  const toggleInterest = useCallback((interest: string) => {
+  const toggleInterest = useCallback((interest: Interest) => {
     setFormData((prev) => ({
       ...prev,
       interests: prev.interests.includes(interest)
@@ -227,7 +227,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           <select
             id="partyType"
             value={formData.partyType}
-            onChange={(e) => updateField('partyType', e.target.value)}
+            onChange={(e) => updateField('partyType', e.target.value as PartyType)}
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
             aria-required="true"
           >
@@ -268,7 +268,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
         <select
           id="style"
           value={formData.style}
-          onChange={(e) => updateField('style', e.target.value)}
+          onChange={(e) => updateField('style', e.target.value as TravelStyle)}
           className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
           aria-required="true"
         >
@@ -287,7 +287,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           <select
             id="dietary"
             value={formData.dietary}
-            onChange={(e) => updateField('dietary', e.target.value)}
+            onChange={(e) => updateField('dietary', e.target.value as DietaryOption)}
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
           >
             {DIETARY_OPTIONS.map((option) => (
@@ -304,7 +304,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           <select
             id="mobility"
             value={formData.mobility}
-            onChange={(e) => updateField('mobility', e.target.value)}
+            onChange={(e) => updateField('mobility', e.target.value as MobilityOption)}
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
           >
             {MOBILITY_OPTIONS.map((option) => (

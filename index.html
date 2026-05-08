@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="A lightweight Travel Planning Assistant to help you create your next adventure itinerary.">
+    <title>WanderlustAI - Travel Planner</title>
+    <!-- Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================
+           CSS DESIGN SYSTEM & STYLING
+           ========================================== */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --accent: #10b981; /* Emerald Green */
+            --accent-hover: #059669;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #d1fae5 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+
+        /* Container */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 2rem;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 span {
+            color: var(--accent);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out backwards;
+            animation-delay: 0.2s;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        }
+
+        /* Buttons */
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-btn {
+            background: rgba(0, 0, 0, 0.05);
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            box-shadow: none;
+            border-radius: 8px;
+            color: var(--text-main);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Results Layout */
+        .results-section {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .itinerary-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Itinerary Cards */
+        .day-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .day-card:hover {
+            transform: translateX(5px);
+            background: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .day-card h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+
+        .day-card p {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .day-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .day-card p strong {
+            color: var(--text-main);
+            display: inline-block;
+            width: 90px;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .glass-panel {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header>
+            <h1>Wanderlust<span>AI</span></h1>
+            <p>Your personal travel planning assistant</p>
+        </header>
+
+        <main>
+            <!-- Input Form Section -->
+            <section class="glass-panel form-section">
+                <form id="travel-form">
+                    <div class="form-group">
+                        <label for="destination">Destination</label>
+                        <input type="text" id="destination" name="destination" placeholder="e.g., Kyoto, Japan" required
+                            aria-required="true">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration">Duration (Days)</label>
+                            <input type="number" id="duration" name="duration" min="1" max="30" placeholder="1-30"
+                                required aria-required="true">
+                        </div>
+                        <div class="form-group">
+                            <label for="budget">Budget (USD)</label>
+                            <input type="number" id="budget" name="budget" min="100" placeholder="e.g., 1000" required
+                                aria-required="true">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="travel-type">Travel Style</label>
+                        <select id="travel-type" name="travel-type" required aria-required="true">
+                            <option value="" disabled selected>Select a style...</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Relaxation">Relaxation</option>
+                            <option value="Cultural">Cultural</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="generate-btn" aria-label="Generate Itinerary">
+                        Generate Itinerary
+                    </button>
+                </form>
+            </section>
+
+            <!-- Results Section -->
+            <section class="glass-panel results-section hidden" id="results-section" aria-live="polite">
+                <div class="results-header">
+                    <h2>Your Itinerary</h2>
+                    <button id="export-btn" class="secondary-btn" aria-label="Export itinerary as text">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+
+                <div class="map-container" id="map-container" aria-label="Map of Destination">
+                    <!-- Google Maps iframe will be injected here -->
+                </div>
+
+                <div class="itinerary-content" id="itinerary-content">
+                    <!-- Itinerary cards will be injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /**
+         * ==========================================
+         * CONFIGURATION
+         * ==========================================
+         * Placeholder for Google Maps Embed API Key.
+         * Note: Security requirement - No API keys hardcoded.
+         */
+        const GOOGLE_MAPS_API_KEY = "AIzaSyBuqZbw7fuhFJBXnK5WdvDt8bMRRUO5U-o";
+
+        /**
+         * ==========================================
+         * INITIALIZATION
+         * ==========================================
+         */
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        function initApp() {
+            const form = document.getElementById('travel-form');
+            const exportBtn = document.getElementById('export-btn');
+
+            form.addEventListener('submit', handleFormSubmit);
+            exportBtn.addEventListener('click', handleExportItinerary);
+        }
+
+        /**
+         * ==========================================
+         * EVENT HANDLERS
+         * ==========================================
+         */
+
+        /**
+         * Handles the main form submission to generate the itinerary
+         * @param {Event} event 
+         */
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            // Extract values
+            const destination = document.getElementById('destination').value.trim();
+            const duration = parseInt(document.getElementById('duration').value, 10);
+            const budget = parseFloat(document.getElementById('budget').value);
+            const travelType = document.getElementById('travel-type').value;
+
+            // Validate inputs before processing
+            if (!validateInputs(destination, duration, budget, travelType)) {
+                return;
+            }
+
+            // Generate and display
+            displayResults(destination, duration, budget, travelType);
+        }
+
+        /**
+         * Handles copying the itinerary text to the clipboard
+         */
+        function handleExportItinerary() {
+            const itineraryCards = document.querySelectorAll('.day-card');
+            if (itineraryCards.length === 0) return;
+
+            let exportText = "My Travel Itinerary\n\n";
+            exportText += "=====================\n\n";
+
+            itineraryCards.forEach(card => {
+                const lines = card.innerText.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    exportText += line + "\n";
+                });
+                exportText += "\n";
+            });
+
+            // Write to clipboard
+            navigator.clipboard.writeText(exportText).then(() => {
+                const btn = document.getElementById('export-btn');
+                const originalHTML = btn.innerHTML;
+
+                // Show success state
+                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+                btn.style.background = 'rgba(16, 185, 129, 0.2)'; // Green tint
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.background = ''; // Reset
+                }, 2000);
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+                alert("Failed to export itinerary.");
+            });
+        }
+
+        /**
+         * ==========================================
+         * BUSINESS LOGIC & VALIDATION
+         * ==========================================
+         */
+
+        /**
+         * Validates the user inputs thoroughly
+         * @param {string} destination 
+         * @param {number} duration 
+         * @param {number} budget 
+         * @param {string} travelType 
+         * @returns {boolean} True if valid, false otherwise
+         */
+        function validateInputs(destination, duration, budget, travelType) {
+            if (!destination || destination.length < 2) {
+                alert("Please enter a valid destination.");
+                return false;
+            }
+            if (isNaN(duration) || duration <= 0 || duration > 30) {
+                alert("Please enter a realistic travel duration (1-30 days).");
+                return false;
+            }
+            if (isNaN(budget) || budget <= 0) {
+                alert("Please enter a valid budget amount.");
+                return false;
+            }
+            if (!travelType) {
+                alert("Please select your preferred travel style.");
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Generates a template-based mock itinerary
+         * @param {string} destination 
+         * @param {number} duration 
+         * @param {string} travelType 
+         * @returns {Array} Array of day objects containing activities
+         */
+        function generateMockItinerary(destination, duration, travelType) {
+            const itinerary = [];
+
+            // Mock activity databases based on travel type
+            const activities = {
+                "Adventure": [
+                    "Hike the nearest scenic trail",
+                    "Go zip-lining or rock climbing",
+                    "Scuba diving / Snorkeling excursion",
+                    "Off-road ATV guided tour",
+                    "White water rafting or kayaking",
+                    "Rent bikes and explore rugged terrain"
+                ],
+                "Relaxation": [
+                    "Full spa day and wellness massage",
+                    "Lounge by the pristine beach or pool",
+                    "Enjoy a sunset catamaran cruise",
+                    "Morning yoga and meditation retreat",
+                    "Casual stroll in the botanical gardens",
+                    "Read a book at a quiet local cafe"
+                ],
+                "Cultural": [
+                    "Visit the primary local history museum",
+                    "Guided historical walking tour of the city",
+                    "Authentic traditional cooking class",
+                    "Attend a local theater or music show",
+                    "Explore ancient ruins or notable temples",
+                    "Wander through the historic artisan market"
+                ]
+            };
+
+            const selectedActivities = activities[travelType] || activities["Cultural"];
+
+            for (let i = 1; i <= duration; i++) {
+                // Procedurally pick an activity to vary the days
+                const morningActivity = selectedActivities[(i * 2) % selectedActivities.length];
+                const afternoonActivity = selectedActivities[(i * 3) % selectedActivities.length];
+
+                itinerary.push({
+                    day: i,
+                    title: `Day ${i}: Exploring ${destination}`,
+                    morning: morningActivity,
+                    afternoon: afternoonActivity,
+                    evening: `Enjoy local cuisine at a highly-rated ${travelType.toLowerCase()}-friendly spot.`
+                });
+            }
+
+            return itinerary;
+        }
+
+        /**
+         * ==========================================
+         * DOM MANIPULATION & RENDERING
+         * ==========================================
+         */
+
+        /**
+         * Orchestrates the rendering of results on the page
+         * @param {string} destination 
+         * @param {number} duration 
+         * @param {number} budget 
+         * @param {string} travelType 
+         */
+        function displayResults(destination, duration, budget, travelType) {
+            const resultsSection = document.getElementById('results-section');
+
+            // 1. Generate Data
+            const itinerary = generateMockItinerary(destination, duration, travelType);
+
+            // 2. Render Components
+            renderItinerary(itinerary);
+            renderMap(destination);
+
+            // 3. Show and Scroll
+            resultsSection.classList.remove('hidden');
+
+            // Small timeout to allow DOM to unhide before smooth scrolling
+            setTimeout(() => {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        /**
+         * Injects the generated itinerary into the DOM
+         * @param {Array} itinerary 
+         */
+        function renderItinerary(itinerary) {
+            const container = document.getElementById('itinerary-content');
+            container.innerHTML = ''; // Clear previous
+
+            itinerary.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day-card';
+                dayDiv.innerHTML = `
+                    <h3>${day.title}</h3>
+                    <p><strong>Morning:</strong> ${day.morning}</p>
+                    <p><strong>Afternoon:</strong> ${day.afternoon}</p>
+                    <p><strong>Evening:</strong> ${day.evening}</p>
+                `;
+                container.appendChild(dayDiv);
+            });
+        }
+
+        /**
+         * Embeds a Google Maps iframe for the destination
+         * @param {string} destination 
+         */
+        function renderMap(destination) {
+            const mapContainer = document.getElementById('map-container');
+            const encodedDest = encodeURIComponent(destination);
+
+            // Construct the Embed API URL
+            const mapUrl = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodedDest}`;
+
+            mapContainer.innerHTML = `
+                <iframe
+                    width="100%"
+                    height="100%"
+                    style="border:0"
+                    loading="lazy"
+                    allowfullscreen
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="${mapUrl}"
+                    title="Map of ${destination}">
+                </iframe>
+            `;
+        }
+
+        /**
+         * ==========================================
+         * TESTING STRATEGY (If writing unit tests)
+         * ==========================================
+         * 1. Test `validateInputs()`:
+         *    - Pass invalid data (empty strings, negative duration/budget) and assert it returns `false`.
+         *    - Pass valid boundaries and assert it returns `true`.
+         * 
+         * 2. Test `generateMockItinerary()`:
+         *    - Call with a specific duration (e.g., 5) and assert the returned array has a length of 5.
+         *    - Assert that the objects inside the array have the required properties (title, morning, afternoon, evening).
+         * 
+         * 3. Test `handleExportItinerary()` (Clipboard Logic):
+         *    - Mock the DOM with a few `.day-card` elements.
+         *    - Mock `navigator.clipboard.writeText` and assert it is called with the correctly formatted text string.
+         */
+    </script>
+</body>
+
+</html>

@@ -7,6 +7,7 @@
 
 import { getCache, setCache } from '../utils/cache';
 import { getConfig } from '../utils/config';
+import { PLACES_CACHE_TTL_MS, MAX_VENUE_RESULTS } from '../constants';
 
 /** Structure of a venue returned from Places API */
 export interface PlaceVenue {
@@ -58,7 +59,7 @@ export async function searchVenues(
       return [];
     }
 
-    const venues: PlaceVenue[] = (data.results || []).slice(0, 5).map((place: Record<string, unknown>) => ({
+    const venues: PlaceVenue[] = (data.results || []).slice(0, MAX_VENUE_RESULTS).map((place: Record<string, unknown>) => ({
       name: place.name as string,
       placeId: place.place_id as string,
       rating: (place.rating as number) || 0,
@@ -78,8 +79,8 @@ export async function searchVenues(
       openNow: (place.opening_hours as Record<string, boolean>)?.open_now,
     }));
 
-    // Cache results with 10-minute TTL
-    setCache(cacheKey, venues);
+    // Cache results with configured TTL
+    setCache(cacheKey, venues, PLACES_CACHE_TTL_MS);
 
     return venues;
   } catch (error) {

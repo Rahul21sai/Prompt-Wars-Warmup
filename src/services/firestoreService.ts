@@ -16,6 +16,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import type { ParsedItinerary } from './geminiService';
 import { getConfig } from '../utils/config';
+import { FIRESTORE_COLLECTION } from '../constants';
 
 /**
  * Gets Firebase configuration from runtime config.
@@ -85,7 +86,7 @@ export async function saveItinerary(
     updatedAt: now,
   };
 
-  await setDoc(doc(collection(firestore, 'itineraries'), id), document);
+  await setDoc(doc(collection(firestore, FIRESTORE_COLLECTION), id), document);
 
   return id;
 }
@@ -99,7 +100,7 @@ export async function saveItinerary(
 export async function loadItinerary(id: string): Promise<SavedItinerary | null> {
   const firestore = getDb();
 
-  const docRef = doc(collection(firestore, 'itineraries'), id);
+  const docRef = doc(collection(firestore, FIRESTORE_COLLECTION), id);
   const docSnap = await getDoc(docRef);
 
   if (!docSnap.exists()) return null;

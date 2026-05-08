@@ -9,34 +9,17 @@ import { useState, useCallback } from 'react';
 import { validateDestination, validateDates } from '../utils/constraints';
 import { sanitizeDestination } from '../utils/sanitize';
 
-/** Available interest options for multi-select chips */
-const INTEREST_OPTIONS = ['beaches', 'museums', 'nightlife', 'nature', 'food', 'shopping', 'temples', 'adventure'];
-
-/** Travel style options */
-const STYLE_OPTIONS = ['Adventure', 'Relaxation', 'Cultural', 'Honeymoon', 'Family'];
-
-/** Dietary preference options */
-const DIETARY_OPTIONS = ['none', 'vegetarian', 'vegan', 'halal', 'gluten-free'];
-
-/** Mobility options */
-const MOBILITY_OPTIONS = ['standard', 'wheelchair-accessible', 'no-stairs'];
-
-/** Party type options */
-const PARTY_OPTIONS = ['solo', 'couple', 'family', 'group'];
-
-/** Form data structure */
-export interface TravelPreferences {
-  destination: string;
-  startDate: string;
-  endDate: string;
-  budget: number;
-  partyType: string;
-  partySize: number;
-  style: string;
-  dietary: string;
-  mobility: string;
-  interests: string[];
-}
+import { capitalize } from '../utils/format';
+import {
+  INTEREST_OPTIONS,
+  TRAVEL_STYLES,
+  DIETARY_OPTIONS,
+  MOBILITY_OPTIONS,
+  PARTY_TYPE_OPTIONS,
+  MIN_BUDGET_USD,
+  RATE_LIMIT_COOLDOWN_MS
+} from '../constants';
+import type { TravelPreferences } from '../types';
 
 interface PreferenceFormProps {
   onSubmit: (preferences: TravelPreferences) => void;
@@ -102,8 +85,8 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
     }
 
     // Budget validation
-    if (!formData.budget || formData.budget < 100) {
-      newErrors.budget = 'Budget must be at least $100';
+    if (!formData.budget || formData.budget < MIN_BUDGET_USD) {
+      newErrors.budget = `Budget must be at least $${MIN_BUDGET_USD}`;
     }
 
     // Party size for groups
@@ -123,9 +106,9 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
       if (!validate()) return;
       if (cooldown || loading) return;
 
-      // Rate limit: disable button for 3 seconds
+      // Rate limit: disable button for cooldown period
       setCooldown(true);
-      setTimeout(() => setCooldown(false), 3000);
+      setTimeout(() => setCooldown(false), RATE_LIMIT_COOLDOWN_MS);
 
       // Sanitize destination before sending
       const sanitized = {
@@ -248,9 +231,9 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
             className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
             aria-required="true"
           >
-            {PARTY_OPTIONS.map((option) => (
+            {PARTY_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {option.charAt(0).toUpperCase() + option.slice(1)}
+                {capitalize(option)}
               </option>
             ))}
           </select>
@@ -289,7 +272,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-emerald-300"
           aria-required="true"
         >
-          {STYLE_OPTIONS.map((option) => (
+          {TRAVEL_STYLES.map((option) => (
             <option key={option} value={option}>{option}</option>
           ))}
         </select>
@@ -309,7 +292,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           >
             {DIETARY_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {option === 'none' ? 'No preference' : option.charAt(0).toUpperCase() + option.slice(1)}
+                {option === 'none' ? 'No preference' : capitalize(option)}
               </option>
             ))}
           </select>
@@ -326,7 +309,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
           >
             {MOBILITY_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {option.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                {option.split('-').map(capitalize).join(' ')}
               </option>
             ))}
           </select>
@@ -352,7 +335,7 @@ export default function PreferenceForm({ onSubmit, loading }: PreferenceFormProp
                 aria-pressed={isSelected}
                 aria-label={`${interest} interest`}
               >
-                {interest.charAt(0).toUpperCase() + interest.slice(1)}
+                {capitalize(interest)}
               </button>
             );
           })}

@@ -6,7 +6,8 @@
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import PreferenceForm from './components/PreferenceForm';
-import type { TravelPreferences } from './components/PreferenceForm';
+import type { TravelPreferences } from './types';
+import { COPY_SUCCESS_DURATION_MS } from './constants';
 import ItineraryView from './components/ItineraryView';
 import { useGemini } from './hooks/useGemini';
 import { useFirestore } from './hooks/useFirestore';
@@ -115,7 +116,7 @@ function App() {
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
+      setTimeout(() => setCopiedLink(false), COPY_SUCCESS_DURATION_MS);
     } catch {
       // Fallback
       prompt('Copy this link:', url);

@@ -1,196 +1,67 @@
-# WanderlustAI — Travel Planning & Experience Engine
+# WanderlustAI
 
-An AI-powered travel planning web application that generates personalized, day-wise itineraries using Google Gemini, enriched with real venue data from Google Places, displayed on interactive Google Maps, and persistently stored via Firebase Firestore.
-
-## Vertical
-
-**Travel Planning & Experience Engine**
-
-## Google Services Used
-
-| Service | Purpose | Integration |
-|---|---|---|
-| **Google Maps JavaScript API** | Interactive route map with day-clustered markers, polyline routes, and InfoWindows | `@googlemaps/js-api-loader` SDK |
-| **Google Places API** | Real venue search (hotels, restaurants, attractions) with photos, ratings, and pricing | REST API via `textsearch` endpoint |
-| **Google Gemini API** | AI-powered itinerary generation using `gemini-1.5-flash` model | `@google/generative-ai` SDK |
-| **Firebase Firestore** | Persistent storage for save/load/share itineraries | Firebase JavaScript SDK (v9+ modular) |
-| **Google Cloud Run** | Production deployment target | Multi-stage Dockerfile with Nginx |
+WanderlustAI is an AI-powered travel planning and experience engine built with React, TypeScript, Vite, and Tailwind CSS. It leverages Google Gemini to generate highly contextual, multi-day travel itineraries based on detailed user preferences.
 
 ## Features
+- **AI-Powered Itineraries:** Generates day-by-day travel plans using the Google Gemini API.
+- **Interactive Maps:** Displays clustered, color-coded markers for each activity using the Google Maps JavaScript API.
+- **Real Venues:** Integrates with Google Places API to find real hotels, restaurants, and attractions.
+- **Trip Sharing:** Save and share itineraries via unique URLs powered by Firebase Firestore.
+- **Budget Tracking:** Real-time cost breakdowns for the trip.
+- **Weather Forecast:** Fetches weather conditions via Open-Meteo API.
 
-### Smart Preference Form
-- **Destination** with input validation and sanitization (XSS prevention)
-- **Date pickers** with future-date-only enforcement
-- **Budget** with minimum $100 validation
-- **Travel party** selection (Solo, Couple, Family, Group with size)
-- **Travel style** (Adventure, Relaxation, Cultural, Honeymoon, Family)
-- **Dietary preference** (None, Vegetarian, Vegan, Halal, Gluten-free)
-- **Mobility** options (Standard, Wheelchair accessible, No stairs)
-- **Interest chips** multi-select (beaches, museums, nightlife, nature, food, shopping, temples, adventure)
-- Red inline error messages on validation failure
+## Tech Stack
+- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4
+- **AI/APIs:** Google Gemini (`gemini-flash-latest`), Google Maps JS API, Google Places API
+- **Database:** Firebase Firestore
+- **Deployment:** Google Cloud Run (Nginx + `docker-entrypoint.sh` for runtime env injection)
+- **Testing:** Vitest + React Testing Library
 
-### AI Itinerary Generation
-- Structured prompts sent to Google Gemini `gemini-1.5-flash`
-- JSON response parsing with markdown code fence stripping
-- Graceful error handling with retry button
-- AbortController for cancelling in-flight requests
+## Setup Instructions
 
-### Interactive Map (Google Maps JS API)
-- Full-width interactive map with custom color-coded markers per day
-- Day 1 = Blue, Day 2 = Green, Day 3 = Orange, etc.
-- InfoWindow on marker click: venue name, rating, cost, "Open in Google Maps" deep link
-- Polyline routes connecting same-day stops
-- Automatic bounds fitting to show all markers
-
-### Real Venue Data (Google Places API)
-- Search hotels, restaurants, and attractions near destination
-- Dietary-filtered restaurant search
-- Style-based attraction search (museum/beach/park)
-- Real Google star ratings and photos via photo references
-- SessionStorage caching with 10-minute TTL
-
-### Save & Share (Firebase Firestore)
-- Save itinerary to Firestore with UUID document ID
-- Load shared itinerary by URL query param (`?id=xxx`)
-- "Share Trip" button copies shareable URL to clipboard
-- "Saved ✓" badge after successful Firestore write
-
-### Weather Forecast
-- Daily weather forecast from Open-Meteo API (free, no key needed)
-- Temperature range and weather condition icons per day
-
-### Export
-- Export itinerary as plain text to clipboard
-
-## Constraint Engine
-
-Five pure validation functions in `src/utils/constraints.ts`, called before API requests:
-
-| Function | Purpose | Fires When |
-|---|---|---|
-| `validateDestination(destination)` | Ensures destination is non-empty, ≥ 2 chars | Form submission |
-| `validateDates(startDate, endDate)` | Rejects past dates, end before start | Form submission |
-| `validateBudget(totalCost, budget)` | Ensures cost ≤ budget, budget > 0 | Form submission, budget tracking |
-| `filterByDietary(venues, dietary)` | Filters venues by dietary tag | After Places API results |
-| `enforceActivityLimit(activities)` | Caps activities at 3 per day | During itinerary rendering |
-
-All functions are **pure** (no side effects, no API calls) and are independently unit tested.
-
-## Architecture
-
-```
-┌─────────────────┐
-│  Preference Form │
-│  (User Input)    │
-└────────┬─────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Constraint Engine│  ← validateDestination, validateDates, validateBudget
-│ (Pure Functions) │
-└────────┬─────────┘
-         │
-         ▼
-┌─────────────────┐     ┌──────────────────┐
-│  Google Gemini   │────►│  Itinerary JSON  │
-│  (AI Generation) │     │  (Parsed Result) │
-└─────────────────┘     └────────┬─────────┘
-                                 │
-                   ┌─────────────┼──────────────┐
-                   ▼             ▼              ▼
-          ┌──────────────┐ ┌──────────┐ ┌──────────────┐
-          │ Google Places │ │ Maps JS  │ │  Firebase    │
-          │ (Real Venues) │ │ (Map UI) │ │  Firestore   │
-          └──────────────┘ └──────────┘ │ (Persistence)│
-                                        └──────────────┘
-```
-
-## Efficiency Optimizations
-
-- **Debounced input** — 400ms debounce on destination before triggering API calls
-- **Lazy loading** — Google Maps JS API loaded only when results are displayed (`React.lazy`)
-- **SessionStorage cache** — Places API results cached with 10-minute TTL
-- **AbortController** — In-flight Gemini requests cancelled if user changes inputs
-- **Image lazy loading** — `loading="lazy"` on all venue photos
-- **Code splitting** — MapView component loaded via dynamic `import()`
-
-## Security
-
-- All API keys stored in `.env` (documented in `.env.example`)
-- `.gitignore` includes: `.env`, `node_modules`, `dist`, `.DS_Store`
-- Input sanitization: `<script>` and HTML tags stripped from user inputs
-- Rate limiting: "Generate" button disabled for 3 seconds after click
-- No `console.log` of API keys anywhere in codebase
-
-## Accessibility
-
-- All form inputs have matching `<label htmlFor>` + `id`
-- Map container has `role="application"` and `aria-label="Trip map"`
-- Loading state uses `aria-live="polite"` for screen reader announcements
-- All buttons have descriptive `aria-label` attributes
-- "Skip to main content" link at top of page
-- Interest chips use `aria-pressed` for toggle state
-- Error messages use `role="alert"` for immediate announcement
-- WCAG AA color contrast compliance
-
-## How to Run
-
+### 1. Clone the repository
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Rahul21sai/Prompt-Wars-Warmup.git
-cd Prompt-Wars-Warmup
+git clone <repository-url>
+cd WanderlustAI
+```
 
-# 2. Set up environment variables
-cp .env.example .env
-# Edit .env and fill in your API keys
-
-# 3. Install dependencies
+### 2. Install Dependencies
+```bash
 npm install
+```
 
-# 4. Start development server
+### 3. Environment Variables
+Create a `.env` file in the root directory based on `.env.example`:
+```env
+VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+```
+
+### 4. Run Development Server
+```bash
 npm run dev
-
-# 5. Run tests
-npm run test
-
-# 6. Build for production
-npm run build
 ```
 
 ## Testing
-
-Tests are located in `src/__tests__/` and use **Vitest** + **React Testing Library**.
-
-| Test File | Description | Tests |
-|---|---|---|
-| `constraints.test.ts` | Budget, date, dietary, activity limit, destination validation | 17 tests |
-| `gemini.test.ts` | Prompt builder, JSON response parser | 10 tests |
-| `App.test.tsx` | App renders, key UI elements present | 6 tests |
-
-Run all tests:
+The application uses Vitest and React Testing Library for comprehensive unit and integration testing.
 ```bash
+# Run all tests
 npm run test
+
+# Run tests with coverage
+npm run coverage
 ```
 
-## Tech Stack
+## Deployment
+WanderlustAI is deployed on Google Cloud Run. The deployment utilizes Nginx to serve the built static files and a `docker-entrypoint.sh` script to inject runtime environment variables into the application configuration.
 
-- **Frontend:** React 19 + TypeScript + Vite
-- **Styling:** Tailwind CSS v4
-- **Testing:** Vitest + React Testing Library + jest-dom
-- **AI:** Google Gemini API (`gemini-1.5-flash`)
-- **Maps:** Google Maps JavaScript API (`@googlemaps/js-api-loader`)
-- **Places:** Google Places API (Text Search)
-- **Storage:** Firebase Firestore (v9+ modular SDK)
-- **Weather:** Open-Meteo API (free, no key)
-- **Deployment:** Google Cloud Run + Nginx
-
-## Assumptions
-
-1. Users have a modern browser with JavaScript enabled
-2. Google API keys are configured with appropriate service restrictions
-3. Firebase project has Firestore enabled with public read/write rules (for hackathon)
-4. The Google Maps API key has Maps JavaScript API, Places API, and Geocoding API enabled
-5. Budget is specified in USD
-6. Trip duration is derived from start/end date selection
-7. Weather data is approximate and based on Open-Meteo forecast models
-8. Venue photos require a valid Google Places API key with photo service enabled
+To manually deploy from Google Cloud Shell:
+```bash
+gcloud run deploy promptwarwarmup --source . --region europe-west1 --allow-unauthenticated
+```

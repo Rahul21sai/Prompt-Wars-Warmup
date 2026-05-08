@@ -6,6 +6,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getConfig } from '../utils/config';
+import { GEMINI_MODEL } from '../constants';
 
 /** Input parameters for building the Gemini prompt */
 export interface GeminiPromptParams {
@@ -166,7 +167,7 @@ export async function generateItinerary(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-flash-latest',
+    model: GEMINI_MODEL,
     systemInstruction: 'You are a travel expert. Return only valid JSON. Do not include markdown formatting or code fences.',
   });
 

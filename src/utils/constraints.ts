@@ -4,6 +4,8 @@
  * Called BEFORE generating itinerary to validate user inputs
  */
 
+import { MAX_ACTIVITIES_PER_DAY, MIN_DESTINATION_LENGTH } from '../constants';
+
 /** Venue type used by the dietary filter */
 export interface Venue {
   name: string;
@@ -66,7 +68,6 @@ export function filterByDietary(venues: Venue[], dietary: string): Venue[] {
  * @returns Array truncated to at most 3 items
  */
 export function enforceActivityLimit(activities: string[]): string[] {
-  const MAX_ACTIVITIES_PER_DAY = 3;
   return activities.slice(0, MAX_ACTIVITIES_PER_DAY);
 }
 
@@ -76,6 +77,6 @@ export function enforceActivityLimit(activities: string[]): string[] {
  * @returns true if destination is valid, false otherwise
  */
 export function validateDestination(destination: string): boolean {
-  if (!destination || destination.trim().length < 2) return false;
+  if (!destination || destination.trim().length < MIN_DESTINATION_LENGTH) return false;
   return true;
 }

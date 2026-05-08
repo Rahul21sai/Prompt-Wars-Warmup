@@ -6,6 +6,7 @@
  */
 
 import { getCache, setCache } from '../utils/cache';
+import { getConfig } from '../utils/config';
 
 /** Structure of a venue returned from Places API */
 export interface PlaceVenue {
@@ -40,7 +41,7 @@ export async function searchVenues(
   const cached = getCache<PlaceVenue[]>(cacheKey);
   if (cached) return cached;
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = getConfig().GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
     throw new Error('Google Maps API key is not configured. Set VITE_GOOGLE_MAPS_API_KEY in .env');
   }
@@ -94,7 +95,7 @@ export async function searchVenues(
  * @returns Full URL to the photo
  */
 export function getVenuePhotoUrl(photoReference: string, maxWidth: number = 400): string {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = getConfig().GOOGLE_MAPS_API_KEY;
   return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${apiKey}`;
 }
 

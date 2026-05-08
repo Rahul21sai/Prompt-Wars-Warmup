@@ -5,6 +5,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getConfig } from '../utils/config';
 
 /** Input parameters for building the Gemini prompt */
 export interface GeminiPromptParams {
@@ -152,8 +153,8 @@ export async function generateItinerary(
   params: GeminiPromptParams,
   signal?: AbortSignal
 ): Promise<ParsedItinerary> {
-  // API key loaded from environment variable — never hardcoded
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  // API key loaded from runtime config — never hardcoded
+  const apiKey = getConfig().GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('Gemini API key is not configured. Set VITE_GEMINI_API_KEY in .env');
   }

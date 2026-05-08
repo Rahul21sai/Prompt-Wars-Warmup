@@ -5,6 +5,7 @@
  */
 
 import { Loader } from '@googlemaps/js-api-loader';
+import { getConfig } from '../utils/config';
 
 /** Day color scheme for markers */
 const DAY_COLORS: Record<number, string> = {
@@ -41,7 +42,7 @@ let loaderInstance: Loader | null = null;
  */
 function getLoader(): Loader {
   if (!loaderInstance) {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const apiKey = getConfig().GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       throw new Error('Google Maps API key not configured. Set VITE_GOOGLE_MAPS_API_KEY in .env');
     }

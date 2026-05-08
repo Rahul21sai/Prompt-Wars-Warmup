@@ -15,16 +15,23 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import type { ParsedItinerary } from './geminiService';
+import { getConfig } from '../utils/config';
 
-/** Firebase configuration — loaded from environment variables */
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-};
+/**
+ * Gets Firebase configuration from runtime config.
+ * Uses getConfig() which supports both build-time and runtime injection.
+ */
+function getFirebaseConfig() {
+  const config = getConfig();
+  return {
+    apiKey: config.FIREBASE_API_KEY,
+    authDomain: config.FIREBASE_AUTH_DOMAIN,
+    projectId: config.FIREBASE_PROJECT_ID,
+    storageBucket: config.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: config.FIREBASE_MESSAGING_SENDER_ID,
+    appId: config.FIREBASE_APP_ID,
+  };
+}
 
 /** Lazily initialized Firestore instance */
 let db: Firestore | null = null;
@@ -37,7 +44,7 @@ let db: Firestore | null = null;
 function getDb(): Firestore {
   if (db) return db;
 
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  const app = getApps().length === 0 ? initializeApp(getFirebaseConfig()) : getApp();
   db = getFirestore(app);
   return db;
 }

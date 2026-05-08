@@ -67,8 +67,7 @@ export function buildGeminiPrompt(params: GeminiPromptParams): string {
     partySize = 1,
   } = params;
 
-  return `You are a travel expert. Return only valid JSON. Do not include markdown formatting or code fences.
-You are a professional travel planner. Create a detailed ${duration}-day travel itinerary for ${destination}.
+  return `You are a professional travel planner. Create a detailed ${duration}-day travel itinerary for ${destination}.
 
 Travel Preferences:
 - Budget: $${budget} USD total
@@ -167,7 +166,8 @@ export async function generateItinerary(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-pro'
+    model: 'gemini-flash-latest',
+    systemInstruction: 'You are a travel expert. Return only valid JSON. Do not include markdown formatting or code fences.',
   });
 
   const prompt = buildGeminiPrompt(params);
